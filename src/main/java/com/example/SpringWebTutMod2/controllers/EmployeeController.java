@@ -1,9 +1,14 @@
 package com.example.SpringWebTutMod2.controllers;
 
 import com.example.SpringWebTutMod2.dto.EmployeeDTO;
+import com.example.SpringWebTutMod2.entities.EmployeeEntity;
+import com.example.SpringWebTutMod2.repositries.EmployeRepository;
+import com.example.SpringWebTutMod2.services.EmployeService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 //@RequestMapping(path="/employees")
@@ -19,22 +24,28 @@ public class EmployeeController {
 //        return "Hi my id is " +employeeId;
 //    }
 
+    private final EmployeService employeService;
+    EmployeeController(EmployeService employeService)
+    {
+        this.employeService=employeService;
+    }
     //    another way
     @GetMapping("/{employeeId}")
-    public String getEmployeeById(@PathVariable(name = "employeeId") Long id) {
-        return "Hi my id is " + id;
+    public EmployeeDTO getEmployeeById(@PathVariable(name = "employeeId") Long id) {
+        return employeService.getEmployeeById(id);
     }
 
     @GetMapping
-    public String getAllEmployee(@RequestParam(required = false) Integer age)
+    public List<EmployeeDTO> getAllEmployee(@RequestParam(required = false) Integer age)
     {
-        return "hi my age is "+age;
+        return employeService.getAllEmployee();
     }
 
+
     @PostMapping
-    public EmployeeDTO createEmployee(@RequestBody EmployeeDTO employee)
+    public String createEmployee(@RequestBody EmployeeDTO employee)
     {
-        employee.setId(100L);
-        return employee;
+        employeService.createEmployee(employee);
+        return employee.getName()+" employee is created";
     }
 }
