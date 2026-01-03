@@ -3,11 +3,15 @@ package com.example.SpringWebTutMod2.services;
 import com.example.SpringWebTutMod2.dto.EmployeeDTO;
 import com.example.SpringWebTutMod2.entities.EmployeeEntity;
 import com.example.SpringWebTutMod2.repositries.EmployeRepository;
+import org.apache.el.util.ReflectionUtil;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class EmployeService {
@@ -20,7 +24,7 @@ public class EmployeService {
     }
 
     public EmployeeDTO getEmployeeById(Long id) {
-        EmployeeEntity employeeEntity=employeRepository.getById(id);
+        EmployeeEntity employeeEntity=employeRepository.findById(id).orElse(null);
         EmployeeDTO employeeDTO=modelMapper.map(employeeEntity,EmployeeDTO.class);
         return  employeeDTO;
     }
@@ -35,5 +39,30 @@ public class EmployeService {
 
     public void createEmployee(EmployeeDTO employee) {
         employeRepository.save(modelMapper.map(employee,EmployeeEntity.class));
+    }
+
+    public EmployeeDTO updateEmployeeById(Long id, EmployeeDTO employeeDTO) {
+        EmployeeEntity employeeEntity=modelMapper.map(employeeDTO,EmployeeEntity.class);
+        employeeEntity.setId(id);
+        employeRepository.save(employeeEntity);
+        return modelMapper.map(employeeEntity,EmployeeDTO.class);
+    }
+
+    public EmployeeDTO updatePartialEmployeeData(Long employeeId, Map<String, Object> employee) {
+        boolean isExist=employeRepository.existsById(employeeId);
+        if(!isExist)
+            return null;
+        EmployeeEntity employeeEntity=employeRepository.findById(employeeId).orElse(null);
+       for(Map.Entry<String,Object>entry:employee.entrySet())
+       {
+
+            Field fieldToBeUpdated=ReflectionUtils.getRequiredField(EmployeeEntity.class,entry.getKey());
+           fieldToBeUpdated.setAccessible(true);
+           ReflectionUtils.setField(fieldToBeUpdated,employeeEntity,entry.getValue());
+       }
+       employeeEntity.setId(employeeId);
+       employeRepository.save(employeeEntity);
+        return modelMapper.map(employeeEntity,EmployeeDTO.class);
+
     }
 }
