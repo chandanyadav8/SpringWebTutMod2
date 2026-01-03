@@ -3,7 +3,6 @@ package com.example.SpringWebTutMod2.services;
 import com.example.SpringWebTutMod2.dto.EmployeeDTO;
 import com.example.SpringWebTutMod2.entities.EmployeeEntity;
 import com.example.SpringWebTutMod2.repositries.EmployeRepository;
-import org.apache.el.util.ReflectionUtil;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.util.ReflectionUtils;
 import org.springframework.stereotype.Service;
@@ -49,7 +48,7 @@ public class EmployeService {
     }
 
     public EmployeeDTO updatePartialEmployeeData(Long employeeId, Map<String, Object> employee) {
-        boolean isExist=employeRepository.existsById(employeeId);
+        boolean isExist=isExistEmployee(employeeId);
         if(!isExist)
             return null;
         EmployeeEntity employeeEntity=employeRepository.findById(employeeId).orElse(null);
@@ -64,5 +63,19 @@ public class EmployeService {
        employeRepository.save(employeeEntity);
         return modelMapper.map(employeeEntity,EmployeeDTO.class);
 
+    }
+
+    public boolean deleteEmployeeById(Long id) {
+        boolean employeeExist=isExistEmployee(id);
+        if(employeeExist)
+        {
+            employeRepository.deleteById(id);
+            return employeeExist;
+        }
+        return employeeExist;
+    }
+    public boolean isExistEmployee(Long id)
+    {
+        return employeRepository.existsById(id);
     }
 }
