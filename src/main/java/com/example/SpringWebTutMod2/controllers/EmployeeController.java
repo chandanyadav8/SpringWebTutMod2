@@ -1,7 +1,9 @@
 package com.example.SpringWebTutMod2.controllers;
 
 import com.example.SpringWebTutMod2.dto.EmployeeDTO;
+import com.example.SpringWebTutMod2.exceptions.ResourceNotFoundException;
 import com.example.SpringWebTutMod2.services.EmployeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 @RestController
@@ -35,10 +38,15 @@ public class EmployeeController {
     public ResponseEntity<EmployeeDTO> getEmployeeById(@PathVariable(name = "employeeId") Long id) {
         EmployeeDTO employeeDTO= employeService.getEmployeeById(id);
         if (employeeDTO==null)
-            return ResponseEntity.notFound().build();
+            throw new ResourceNotFoundException("Employee Not found");
         return ResponseEntity.ok(employeeDTO);
 
     }
+//    @ExceptionHandler(NoSuchElementException.class)
+//    public ResponseEntity<String>noSuchElementException(NoSuchElementException exception)
+//    {
+//        return new ResponseEntity<>("No Employee found",HttpStatus.NOT_FOUND);
+//    }
 
     @GetMapping
     public ResponseEntity<List<EmployeeDTO>> getAllEmployee(@RequestParam(required = false) Integer age)
@@ -49,10 +57,10 @@ public class EmployeeController {
 
 
     @PostMapping
-    public ResponseEntity<String> createEmployee(@RequestBody EmployeeDTO employee)
+    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody @Valid EmployeeDTO employee)
     {
-        employeService.createEmployee(employee);
-        return new ResponseEntity<>(employee.getName()+" employee is created",HttpStatus.CREATED);
+        EmployeeDTO employeeDTO=employeService.createEmployee(employee);
+        return new ResponseEntity<>(employeeDTO,HttpStatus.CREATED);
     }
     @PutMapping(path="/{employeeId}")
     public ResponseEntity<EmployeeDTO> updateEmployeeById(@RequestBody EmployeeDTO employeeDTO,
